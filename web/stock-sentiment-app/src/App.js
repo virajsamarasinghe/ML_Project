@@ -3,26 +3,26 @@ import axios from 'axios';
 import './App.css';
 
 function App() {
-    // State for storing headlines and prediction
     const [headlines, setHeadlines] = useState(['']);
     const [prediction, setPrediction] = useState(null);
+    const [selectedModel, setSelectedModel] = useState('model1'); // Add model state
 
-    // Handle change in input fields
     const handleHeadlineChange = (index, value) => {
         const newHeadlines = [...headlines];
         newHeadlines[index] = value;
         setHeadlines(newHeadlines);
     };
 
-    // Add a new headline input field
     const addHeadlineField = () => {
         setHeadlines([...headlines, '']);
     };
 
-    // Submit headlines to FastAPI backend
     const submitHeadlines = async () => {
         try {
-            const response = await axios.post("http://localhost:8000/predict", { headlines });
+            const response = await axios.post("http://localhost:8000/predict", {
+                headlines,
+                model: selectedModel // Include model in request
+            });
             setPrediction(response.data.prediction);
         } catch (error) {
             console.error("Error making prediction", error);
@@ -32,9 +32,20 @@ function App() {
     return (
         <div className="App">
             <h1>Stock Sentiment Analysis</h1>
+            
+            {/* Model selector dropdown */}
+            <select 
+                value={selectedModel}
+                onChange={(e) => setSelectedModel(e.target.value)}
+                className="model-selector"
+            >
+                <option value="model1">Model 1</option>
+                <option value="model2">Model 2</option>
+                <option value="model3">Model 3</option>
+            </select>
+
             <p>Enter news headlines to predict the market trend:</p>
             
-            {/* Render input fields for each headline */}
             {headlines.map((headline, index) => (
                 <input
                     key={index}
@@ -45,11 +56,9 @@ function App() {
                 />
             ))}
 
-            {/* Buttons to add new field and submit headlines */}
             <button onClick={addHeadlineField}>Add Headline</button>
             <button onClick={submitHeadlines}>Predict Market</button>
 
-            {/* Display prediction result */}
             {prediction !== null && (
                 <div className="prediction-result">
                     <h2>Prediction: {prediction === 1 ? "Market Up" : "Market Down"}</h2>
